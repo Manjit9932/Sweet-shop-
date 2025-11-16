@@ -5,12 +5,14 @@ import SearchFilter from '../components/SearchFilter'
 import { Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
+import { useCart } from '../context/CartContext'
 
 const Dashboard = () => {
   const [sweets, setSweets] = useState([])
   const [filteredSweets, setFilteredSweets] = useState([])
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
+  const { getCartCount } = useCart()
 
   const fetchSweets = async () => {
     try {
@@ -88,6 +90,11 @@ const Dashboard = () => {
             <p className="text-gray-600">
               Showing <span className="font-bold text-purple-600">{filteredSweets.length}</span> {filteredSweets.length === 1 ? 'sweet' : 'sweets'}
             </p>
+            {user?.role !== 'admin' && getCartCount() > 0 && (
+              <div className="bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold">
+                {getCartCount()} item{getCartCount() > 1 ? 's' : ''} in cart
+              </div>
+            )}
           </div>
 
           {/* Products Grid */}

@@ -1,83 +1,107 @@
-# Sweet Shop Management System - Backend
+# 🍬 Sweet Shop Management System
 
-A robust RESTful API for managing a sweet shop with authentication, inventory management, and admin controls.
+A full-stack e-commerce application for managing a sweet shop with cart functionality, order management, and admin approval system.
 
-## Features
+## ✨ Features
 
-- ✅ JWT-based authentication
-- ✅ Role-based access control (User/Admin)
-- ✅ CRUD operations for sweets
-- ✅ Search functionality (by name, category, price range)
-- ✅ Inventory management (purchase & restock)
-- ✅ Shopping cart functionality
-- ✅ Comprehensive test coverage
-- ✅ MVC architecture
-- 💰 Prices in Indian Rupees (₹)
+### User Features
+- 🔐 User registration and authentication (JWT)
+- 🛒 Shopping cart with persistent storage
+- 🔍 Search and filter sweets by name, category, and price
+- 📦 Order placement and tracking
+- 👤 Profile management with address
+- 📱 Responsive design
 
-## Tech Stack
+### Admin Features
+- 👨‍💼 Admin dashboard
+- ➕ Add, edit, delete sweets
+- 📊 Inventory management (restock)
+- ✅ Order approval/rejection system
+- 🔔 Real-time order notifications
+- 📍 View customer delivery addresses
 
+## 🛠️ Tech Stack
+
+### Backend
 - Node.js & Express.js
-- MongoDB & Mongoose
-- JWT for authentication
-- Jest & Supertest for testing
+- MongoDB Atlas (Cloud Database)
+- JWT Authentication
 - bcryptjs for password hashing
 
-## Setup
+### Frontend
+- React 18
+- Vite
+- Tailwind CSS
+- React Router
+- Axios
+- React Hot Toast
 
-1. Install dependencies:
+## 🚀 Installation
+
+### Prerequisites
+- Node.js (v14 or higher)
+- MongoDB Atlas account
+- Git
+
+### Backend Setup
+
+1. Clone the repository
+```bash
+git clone https://github.com/YOUR_USERNAME/sweet-shop-management.git
+cd sweet-shop-management
+```
+
+2. Install dependencies
 ```bash
 npm install
 ```
 
-2. Create `.env` file with required variables
-
-3. Start MongoDB service
-
-4. Create admin user:
+3. Create `.env` file (copy from `.env.example`)
 ```bash
-node scripts/createAdmin.js
+cp .env.example .env
 ```
 
-5. Run the server:
+4. Update `.env` with your MongoDB Atlas credentials
+```env
+MONGODB_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@cluster0.jyrtj6j.mongodb.net/sweet-shop
+JWT_SECRET=your_secret_key
+```
+
+5. Start backend server
 ```bash
 npm run dev
 ```
 
-## API Endpoints
+Server runs on: http://localhost:5001
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
+### Frontend Setup
 
-### Sweets (Protected)
-- `POST /api/sweets` - Add new sweet
-- `GET /api/sweets` - Get all sweets
-- `GET /api/sweets/search` - Search sweets
-- `PUT /api/sweets/:id` - Update sweet
-- `DELETE /api/sweets/:id` - Delete sweet (Admin only)
-
-### Inventory (Protected)
-- `POST /api/sweets/:id/purchase` - Purchase sweet
-- `POST /api/sweets/:id/restock` - Restock sweet (Admin only)
-
-## Testing
-
-Run tests:
+1. Navigate to frontend directory
 ```bash
-npm test
+cd frontend
 ```
 
-Run tests with coverage:
+2. Install dependencies
 ```bash
-npm test -- --coverage
+npm install
 ```
 
-## Currency
+3. Start frontend
+```bash
+npm run dev
+```
 
-All prices are in Indian Rupees (₹). Examples:
-- Chocolate Bar: ₹50.00
-- Candy Pack: ₹25.00
-- Premium Sweets: ₹150.00
+Frontend runs on: http://localhost:3000
 
-## Project Structure
+### Create Admin User
+
+```bash
+node scripts/createAdmin.js
+```
+
+**Default Admin Credentials:**
+- Email: admin@sweetshop.com
+- Password: admin123
+
+## 📁 Project Structure
 

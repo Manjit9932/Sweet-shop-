@@ -1,15 +1,29 @@
-import { ShoppingCart, Edit, Trash2, Package, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { ShoppingCart, Edit, Trash2, Package, Plus, Check } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 import axios from '../utils/axios'
 import toast from 'react-hot-toast'
-import { useAuth } from '../context/AuthContext'
 
 const SweetCard = ({ sweet, isAdmin, onUpdate, onDelete }) => {
   const [purchasing, setPurchasing] = useState(false)
   const [quantity, setQuantity] = useState(1)
-  const { addToCart } = useCart()
+  const { addToCart, cartItems } = useCart()
   const { user } = useAuth()
+  const [isInCart, setIsInCart] = useState(false)
+  const [cartQuantity, setCartQuantity] = useState(0)
+
+  useEffect(() => {
+    // Check if item is in cart
+    const cartItem = cartItems.find(item => item._id === sweet._id)
+    if (cartItem) {
+      setIsInCart(true)
+      setCartQuantity(cartItem.quantity)
+    } else {
+      setIsInCart(false)
+      setCartQuantity(0)
+    }
+  }, [cartItems, sweet._id])
 
   const getCategoryColor = (category) => {
     const colors = {
@@ -55,7 +69,15 @@ const SweetCard = ({ sweet, isAdmin, onUpdate, onDelete }) => {
   }
 
   return (
-    <div className="glass rounded-2xl overflow-hidden card-hover group">
+    <div className="glass rounded-2xl overflow-hidden card-hover group relative">
+      {/* In Cart Badge */}
+      {isInCart && !isAdmin && (
+        <div className="absolute top-2 left-2 z-10 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center space-x-1 shadow-lg">
+          <Check className="w-3 h-3" />
+          <span>In Cart ({cartQuantity})</span>
+        </div>
+      )}
+
       <div className={`h-48 bg-gradient-to-br ${getCategoryColor(sweet.category)} relative overflow-hidden`}>
         <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all"></div>
         
@@ -115,11 +137,13 @@ const SweetCard = ({ sweet, isAdmin, onUpdate, onDelete }) => {
                 className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-semibold transition-all ${
                   sweet.quantity === 0
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : isInCart
+                    ? 'bg-green-500 text-white hover:bg-green-600 hover:shadow-lg hover:scale-105'
                     : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg hover:scale-105'
                 }`}
               >
-                <Plus className="w-5 h-5" />
-                <span>Add to Cart</span>
+                {isInCart ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                <span>{isInCart ? 'Added to Cart' : 'Add to Cart'}</span>
               </button>
               <button
                 onClick={handleBuyNow}
