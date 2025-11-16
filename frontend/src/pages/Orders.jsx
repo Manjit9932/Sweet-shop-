@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
 import axios from '../utils/axios'
+import CancelOrderModal from '../components/CancelOrderModal'
 import { Package, Clock, CheckCircle, XCircle, Trash2, ShoppingBag, Smartphone } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const Orders = () => {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [isCancelling, setIsCancelling] = useState(false)
 
   const fetchOrders = async () => {
     try {
@@ -22,16 +26,31 @@ const Orders = () => {
     fetchOrders()
   }, [])
 
-  const handleCancelOrder = async (orderId) => {
-    if (!confirm('Are you sure you want to cancel this order?')) return
+  const handleCancelClick = (order) => {
+    setSelectedOrder(order)
+    setShowCancelModal(true)
+  }
 
+  const handleCancelConfirm = async () => {
+    if (!selectedOrder) return
+
+    setIsCancelling(true)
     try {
-      await axios.delete(`/api/orders/${orderId}`)
-      toast.success('Order cancelled successfully')
+      await axios.delete(`/api/orders/${selectedOrder._id}`)
+      toast.success('Order cancelled successfully! 🗑️')
+      setShowCancelModal(false)
+      setSelectedOrder(null)
       fetchOrders()
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to cancel order')
+    } finally {
+      setIsCancelling(false)
     }
+  }
+
+  const handleCancelClose = () => {
+    setShowCancelModal(false)
+    setSelectedOrder(null)
   }
 
   const getStatusBadge = (status) => {
@@ -103,7 +122,7 @@ const Orders = () => {
                 {getStatusBadge(order.status)}
                 {order.status === 'pending' && (
                   <button
-                    onClick={() => handleCancelOrder(order._id)}
+                    onClick={() => handleCancelClick(order)}
                     className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"
                     title="Cancel Order"
                   >
@@ -158,6 +177,15 @@ const Orders = () => {
           </div>
         ))}
       </div>
+
+      {/* Cancel Order Modal */}
+      <CancelOrderModal
+        isOpen={showCancelModal}
+        onClose={handleCancelClose}
+        onConfirm={handleCancelConfirm}
+        order={selectedOrder}
+        isProcessing={isCancelling}
+      />
     </div>
   )
 }

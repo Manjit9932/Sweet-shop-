@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import axios from '../utils/axios'
 import { useAuth } from '../context/AuthContext'
-import { User, Mail, Phone, MapPin, Edit2, Save, X, Package, Clock, CheckCircle, XCircle } from 'lucide-react'
+import CancelOrderModal from '../components/CancelOrderModal'
+import { User, Mail, Phone, MapPin, Edit2, Save, X, Package, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const Profile = () => {
@@ -21,6 +22,9 @@ const Profile = () => {
       country: 'India'
     }
   })
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [isCancelling, setIsCancelling] = useState(false)
 
   const fetchProfile = async () => {
     try {
@@ -67,6 +71,33 @@ const Profile = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || 'Update failed')
     }
+  }
+
+  const handleCancelClick = (order) => {
+    setSelectedOrder(order)
+    setShowCancelModal(true)
+  }
+
+  const handleCancelConfirm = async () => {
+    if (!selectedOrder) return
+
+    setIsCancelling(true)
+    try {
+      await axios.delete(`/api/orders/${selectedOrder._id}`)
+      toast.success('Order cancelled successfully! 🗑️')
+      setShowCancelModal(false)
+      setSelectedOrder(null)
+      fetchOrders()
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to cancel order')
+    } finally {
+      setIsCancelling(false)
+    }
+  }
+
+  const handleCancelClose = () => {
+    setShowCancelModal(false)
+    setSelectedOrder(null)
   }
 
   const getStatusBadge = (status) => {
@@ -272,7 +303,18 @@ const Profile = () => {
                           })}
                         </p>
                       </div>
-                      {getStatusBadge(order.status)}
+                      <div className="flex items-center space-x-2">
+                        {getStatusBadge(order.status)}
+                        {order.status === 'pending' && (
+                          <button
+                            onClick={() => handleCancelClick(order)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded transition-all"
+                            title="Cancel Order"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {order.rejectionReason && (
@@ -303,6 +345,15 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Cancel Order Modal */}
+      <CancelOrderModal
+        isOpen={showCancelModal}
+        onClose={handleCancelClose}
+        onConfirm={handleCancelConfirm}
+        order={selectedOrder}
+        isProcessing={isCancelling}
+      />
     </div>
   )
 }
