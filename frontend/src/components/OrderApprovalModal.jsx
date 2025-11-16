@@ -1,4 +1,4 @@
-import { CheckCircle, X, User, Mail, Package, IndianRupee, MapPin, Phone } from 'lucide-react'
+import { CheckCircle, X, User, Mail, Package, IndianRupee, MapPin, Phone, ShoppingBag, Smartphone } from 'lucide-react'
 
 const OrderApprovalModal = ({ isOpen, onClose, onConfirm, order, isProcessing }) => {
   if (!isOpen || !order) return null
@@ -122,6 +122,29 @@ const OrderApprovalModal = ({ isOpen, onClose, onConfirm, order, isProcessing })
                   minute: '2-digit'
                 })}
               </p>
+            </div>
+
+            {/* Payment Method */}
+            <div className="bg-white rounded-lg p-4">
+              <p className="text-sm text-gray-500 mb-1">Payment Method</p>
+              <div className="flex items-center space-x-2">
+                {order.paymentMethod === 'cod' ? (
+                  <>
+                    <ShoppingBag className="w-5 h-5 text-green-600" />
+                    <span className="font-semibold text-green-600">Cash on Delivery</span>
+                  </>
+                ) : (
+                  <>
+                    <Smartphone className="w-5 h-5 text-purple-600" />
+                    <span className="font-semibold text-purple-600">UPI Payment</span>
+                  </>
+                )}
+              </div>
+              {order.paymentMethod === 'upi' && order.upiTransactionId && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Transaction ID: <span className="font-mono">{order.upiTransactionId}</span>
+                </p>
+              )}
             </div>
           </div>
 

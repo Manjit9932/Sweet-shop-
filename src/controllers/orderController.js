@@ -6,12 +6,26 @@ const Sweet = require('../models/Sweet');
 // @access  Private
 exports.createOrder = async (req, res) => {
   try {
-    const { items } = req.body;
+    const { items, paymentMethod, upiTransactionId } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'No items in order'
+      });
+    }
+
+    if (!paymentMethod || !['cod', 'upi'].includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select a valid payment method (COD or UPI)'
+      });
+    }
+
+    if (paymentMethod === 'upi' && !upiTransactionId) {
+      return res.status(400).json({
+        success: false,
+        message: 'UPI Transaction ID is required for UPI payment'
       });
     }
 
@@ -59,6 +73,9 @@ exports.createOrder = async (req, res) => {
       user: req.user._id,
       items: orderItems,
       totalAmount,
+      paymentMethod,
+      upiTransactionId: paymentMethod === 'upi' ? upiTransactionId : null,
+      paymentStatus: paymentMethod === 'cod' ? 'pending' : 'completed',
       status: 'pending'
     });
 
@@ -66,7 +83,7 @@ exports.createOrder = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Order created successfully! Waiting for admin approval.',
+      message: `Order created successfully! Payment method: ${paymentMethod.toUpperCase()}. Waiting for admin approval.`,
       data: order
     });
   } catch (error) {

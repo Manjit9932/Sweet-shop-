@@ -1,5 +1,5 @@
 import { useCart } from '../context/CartContext'
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react'
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, CreditCard, Smartphone } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import axios from '../utils/axios'
@@ -8,6 +8,9 @@ import toast from 'react-hot-toast'
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart()
   const [purchasing, setPurchasing] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('cod')
+  const [upiTransactionId, setUpiTransactionId] = useState('')
   const navigate = useNavigate()
 
   const handleCheckout = async () => {
@@ -16,18 +19,27 @@ const Cart = () => {
       return
     }
 
+    if (paymentMethod === 'upi' && !upiTransactionId.trim()) {
+      toast.error('Please enter UPI Transaction ID')
+      return
+    }
+
     setPurchasing(true)
     try {
-      // Create order instead of direct purchase
       const orderItems = cartItems.map(item => ({
         sweetId: item._id,
         quantity: item.quantity
       }))
 
-      await axios.post('/api/orders', { items: orderItems })
+      await axios.post('/api/orders', { 
+        items: orderItems,
+        paymentMethod,
+        upiTransactionId: paymentMethod === 'upi' ? upiTransactionId : null
+      })
       
-      toast.success('🎉 Order placed! Waiting for admin approval...')
+      toast.success(`🎉 Order placed with ${paymentMethod.toUpperCase()}! Waiting for admin approval...`)
       clearCart()
+      setShowPaymentModal(false)
       navigate('/orders')
     } catch (error) {
       toast.error(error.response?.data?.message || 'Order placement failed')
@@ -208,7 +220,7 @@ const Cart = () => {
             </div>
 
             <button
-              onClick={handleCheckout}
+              onClick={() => setShowPaymentModal(true)}
               disabled={purchasing}
               className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -218,7 +230,7 @@ const Cart = () => {
                   <span>Processing...</span>
                 </span>
               ) : (
-                `Checkout (₹${getCartTotal().toFixed(2)})`
+                `Proceed to Checkout (₹${getCartTotal().toFixed(2)})`
               )}
             </button>
 
@@ -229,6 +241,119 @@ const Cart = () => {
           </div>
         </div>
       </div>
+
+      {/* Payment Method Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-8 animate-slide-up">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Select Payment Method</h2>
+            
+            <div className="space-y-4 mb-6">
+              {/* Cash on Delivery */}
+              <button
+                onClick={() => {
+                  setPaymentMethod('cod')
+                  setUpiTransactionId('')
+                }}
+                className={`w-full p-4 rounded-xl border-2 transition-all flex items-center space-x-4 ${
+                  paymentMethod === 'cod'
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-gray-300 hover:border-green-300'
+                }`}
+              >
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  paymentMethod === 'cod' ? 'bg-green-500' : 'bg-gray-200'
+                }`}>
+                  <ShoppingBag className={`w-6 h-6 ${paymentMethod === 'cod' ? 'text-white' : 'text-gray-600'}`} />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-bold text-gray-800">Cash on Delivery</p>
+                  <p className="text-sm text-gray-600">Pay when you receive</p>
+                </div>
+                {paymentMethod === 'cod' && (
+                  <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+
+              {/* UPI Payment */}
+              <button
+                onClick={() => setPaymentMethod('upi')}
+                className={`w-full p-4 rounded-xl border-2 transition-all flex items-center space-x-4 ${
+                  paymentMethod === 'upi'
+                    ? 'border-purple-500 bg-purple-50'
+                    : 'border-gray-300 hover:border-purple-300'
+                }`}
+              >
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  paymentMethod === 'upi' ? 'bg-purple-500' : 'bg-gray-200'
+                }`}>
+                  <Smartphone className={`w-6 h-6 ${paymentMethod === 'upi' ? 'text-white' : 'text-gray-600'}`} />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-bold text-gray-800">UPI Payment</p>
+                  <p className="text-sm text-gray-600">Pay via UPI apps</p>
+                </div>
+                {paymentMethod === 'upi' && (
+                  <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+            </div>
+
+            {/* UPI Transaction ID Input */}
+            {paymentMethod === 'upi' && (
+              <div className="mb-6 bg-purple-50 p-4 rounded-xl">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  UPI Transaction ID
+                </label>
+                <input
+                  type="text"
+                  value={upiTransactionId}
+                  onChange={(e) => setUpiTransactionId(e.target.value)}
+                  placeholder="Enter UPI Transaction ID"
+                  className="w-full px-4 py-2 rounded-lg border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <p className="text-xs text-gray-600 mt-2">
+                  Pay via any UPI app and enter the transaction ID here
+                </p>
+              </div>
+            )}
+
+            {/* Order Summary */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-semibold text-gray-800">Total Amount:</span>
+                <span className="text-2xl font-bold text-purple-600">₹{getCartTotal().toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                disabled={purchasing}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCheckout}
+                disabled={purchasing || (paymentMethod === 'upi' && !upiTransactionId.trim())}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+              >
+                {purchasing ? 'Processing...' : 'Place Order'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

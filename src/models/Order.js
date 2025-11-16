@@ -33,6 +33,21 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  paymentMethod: {
+    type: String,
+    enum: ['cod', 'upi'],
+    required: true,
+    default: 'cod'
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'completed', 'failed'],
+    default: 'pending'
+  },
+  upiTransactionId: {
+    type: String,
+    trim: true
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected', 'completed'],

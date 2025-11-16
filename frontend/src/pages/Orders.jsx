@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from '../utils/axios'
-import { Package, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react'
+import { Package, Clock, CheckCircle, XCircle, Trash2, ShoppingBag, Smartphone } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const Orders = () => {
@@ -120,6 +120,24 @@ const Orders = () => {
                 </p>
               </div>
             )}
+
+            {/* Payment Info */}
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-sm text-gray-600 mb-1">Payment Method:</p>
+              <div className="flex items-center space-x-2">
+                {order.paymentMethod === 'cod' ? (
+                  <>
+                    <ShoppingBag className="w-4 h-4 text-green-600" />
+                    <span className="font-semibold text-green-600">Cash on Delivery</span>
+                  </>
+                ) : (
+                  <>
+                    <Smartphone className="w-4 h-4 text-purple-600" />
+                    <span className="font-semibold text-purple-600">UPI Payment</span>
+                  </>
+                )}
+              </div>
+            </div>
 
             <div className="space-y-2">
               {order.items.map((item, index) => (
